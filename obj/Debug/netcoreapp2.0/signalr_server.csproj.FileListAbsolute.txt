@@ -1,0 +1,11 @@
+E:\Source\signalr_server\signalr_server\bin\Debug\netcoreapp2.0\signalr_server.deps.json
+E:\Source\signalr_server\signalr_server\bin\Debug\netcoreapp2.0\signalr_server.runtimeconfig.json
+E:\Source\signalr_server\signalr_server\bin\Debug\netcoreapp2.0\signalr_server.runtimeconfig.dev.json
+E:\Source\signalr_server\signalr_server\bin\Debug\netcoreapp2.0\signalr_server.dll
+E:\Source\signalr_server\signalr_server\bin\Debug\netcoreapp2.0\signalr_server.pdb
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.csproj.CoreCompileInputs.cache
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.AssemblyInfoInputs.cache
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.AssemblyInfo.cs
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.dll
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.pdb
+E:\Source\signalr_server\signalr_server\obj\Debug\netcoreapp2.0\signalr_server.csprojResolveAssemblyReference.cache

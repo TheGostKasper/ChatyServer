@@ -12,5 +12,7 @@ namespace signalr_server.Models
         public int FromUserId { get; internal set; }
         public User FromUser { get; internal set; }
         public string Content { get; internal set; }
+        public bool Status { get; internal set; }
+        public User User { get; internal set; }
     }
 }

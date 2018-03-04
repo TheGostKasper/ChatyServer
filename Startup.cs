@@ -63,6 +63,7 @@ namespace signalr_server
             {
                 app.UseDeveloperExceptionPage();
             }
+            app.UseStaticFiles();
             app.UseCors("CorsPolicy");
 
             app.UseSignalR(routes =>

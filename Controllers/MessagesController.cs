@@ -37,7 +37,8 @@ namespace signalr_server.Controllers
                     ToUserId = e.ToUserId,
                     FromUserId = e.FromUserId,
                     User = _users.FirstOrDefault(fu => fu.UserId == ((e.ToUserId == userId) ? e.FromUserId : e.ToUserId)),
-                    Content = e.Content
+                    Content = e.Content,
+                    Status = e.Status
                 })
                 .Distinct()
                 .GroupBy(e => new { e.ToUserId, e.FromUserId })
@@ -112,7 +113,10 @@ namespace signalr_server.Controllers
             {
                 var messages = _context.Messages.Where(e =>
                   (e.FromUserId == req.FromUser && e.ToUserId == req.ToUser) || (e.FromUserId == req.ToUser && e.ToUserId == req.FromUser))
-                  .Skip((req.Page - 1) * req.PageSize).Take(req.Page * req.PageSize).ToList();
+                  .Skip((req.Page - 1) * req.PageSize)
+                  .OrderByDescending(e=>e.MessageId)
+                  .Take(req.Page * req.PageSize)
+                  .ToList();
                 return Ok(new
                 {
                     data = messages,

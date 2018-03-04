@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
@@ -20,10 +22,13 @@ namespace signalr_server.Controllers
         private readonly ChatyDb _context;
         private readonly IHubContext<ChatHub> _chatHub;
         private readonly HelperServices helperServices;
-        public UsersController(ChatyDb context, IHubContext<ChatHub> chatHub, Microsoft.Extensions.Configuration.IConfiguration configuration)
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public UsersController(ChatyDb context, IHubContext<ChatHub> chatHub,
+            Microsoft.Extensions.Configuration.IConfiguration configuration, IHostingEnvironment hostingEnvironment)
         {
             _context = context;
             _chatHub = chatHub;
+            _hostingEnvironment = hostingEnvironment;
             helperServices = new HelperServices(configuration);
         }
 
@@ -36,7 +41,7 @@ namespace signalr_server.Controllers
             try
             {
                 var _user = _context.Users.SingleOrDefault(e => e.Password == user.Password && e.Email == user.Email);
-                
+
                 if (_user != null) return Ok(new
                 {
                     token = helperServices.GetToken(_user),
@@ -157,12 +162,12 @@ namespace signalr_server.Controllers
                 message = "Email you entered already exist",
                 data = new { }
             });
-           
+
             user.Status = true;
             user.CreationDate = DateTime.UtcNow;
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            await _chatHub.Clients.All.InvokeAsync("NewUser",user);
+            await _chatHub.Clients.All.InvokeAsync("NewUser", user);
 
 
 
@@ -198,7 +203,29 @@ namespace signalr_server.Controllers
 
             return Ok(user);
         }
+        [Route("uploadAvatar")]
+        [HttpPost]
+        public string UploadAvatar([FromBody] User user)
+        {
+            try
+            {
+                string filePath = Path.Combine(_hostingEnvironment.WebRootPath, String.Format("Images/{0}.jpg",user.UserId));
 
+                System.IO.File.WriteAllBytes(filePath, Convert.FromBase64String(user.Avatar));
+                var curruser = _context.Users.FirstOrDefault(e => e.UserId == user.UserId);
+                if (curruser != null)
+                {
+                    curruser.Avatar = filePath;
+                    _context.SaveChanges();
+                }
+                return filePath;
+            }
+            catch (Exception ex)
+            {
+                return ex.InnerException.ToString();
+            }
+
+        }
         private bool UserExists(int id)
         {
             return _context.Users.Any(e => e.UserId == id);

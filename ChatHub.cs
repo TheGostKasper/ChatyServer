@@ -60,8 +60,7 @@ namespace signalr_server
             //}
             try
             {
-                var toUser = _context.Users.FirstOrDefault(e => e.UserId == message.ToUserId);
-                Clients.Client(toUser.ConnectionId).InvokeAsync("sendPM", new
+                Clients.Client(GetUserConnection(message.ToUserId).ConnectionId).InvokeAsync("sendPM", new
                 {
                     message.Content,
                     message.Status,
@@ -75,9 +74,24 @@ namespace signalr_server
             {
                 throw ex;
             }
-          
-        }
 
+        }
+        public User GetUserConnection(int userId)
+        {
+            return _context.Users.FirstOrDefault(e => e.UserId == userId);
+
+        }
+        public void ReadMessages([Microsoft.AspNetCore.Mvc.FromBody]RequestDTO request)
+        {
+            var list = _context.Messages.Where(e =>
+              ((e.FromUserId == request.FromUser && e.ToUserId == request.ToUser) ||
+              (e.FromUserId == request.ToUser && e.ToUserId == request.FromUser)) && e.Status != true).ToList();
+
+            list.ForEach(msg => msg.Status = true);
+
+            _context.SaveChanges();
+            Clients.Client(GetUserConnection(request.ToUser).ConnectionId).InvokeAsync("read",request.FromUser);
+        }
         public void HandleException(Exception ex)
         {
 

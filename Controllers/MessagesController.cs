@@ -28,7 +28,7 @@ namespace signalr_server.Controllers
         {
             try
             {
-                var _users = _context.Users.Select(e => new User { UserId = e.UserId, Name = e.Name }).ToList();
+                var _users = _context.Users.Select(e => new User { UserId = e.UserId, Name = e.Name,Avatar=e.Avatar }).ToList();
                 var oldMessages = _context.Messages
                 .Where(m => m.FromUserId == userId || m.ToUserId == userId)
                 .Select(e => new MessageObj
@@ -46,7 +46,7 @@ namespace signalr_server.Controllers
                 return Ok(new
                 {
                     data = Chatters(GetChatters(oldMessages)),
-                    message = "Enjoy youe friends suckers"
+                    message = "Enjoy your friends suckers"
                 });
             }
             catch (Exception)

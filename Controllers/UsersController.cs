@@ -204,7 +204,7 @@ namespace signalr_server.Controllers
             try
             {
                 string file = String.Format("Images/{0}.jpg", user.UserId);
-                string hostFilePath = String.Format("{0}://{1}/{2}", (HttpContext.Request.IsHttps)?"https":"httplogin", HttpContext.Request.Host.ToUriComponent(), file);
+                string hostFilePath = String.Format("{0}://{1}/{2}", (HttpContext.Request.IsHttps)?"https":"http", HttpContext.Request.Host.ToUriComponent(), file);
                 string filePath = Path.Combine(_hostingEnvironment.WebRootPath, file);
 
                 System.IO.File.WriteAllBytes(filePath, Convert.FromBase64String(user.Avatar));

@@ -11,5 +11,7 @@ namespace signalr_server.Models
         public int FromUser { get;  set; }
         public int ToUser { get;  set; }
         public int PageSize { get;  set; }
+        public string Email { get; set; }
+        public string Search { get;  set; }
     }
 }

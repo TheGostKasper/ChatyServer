@@ -118,20 +118,13 @@ namespace signalr_server.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUser([FromRoute] int id, [FromBody] User user)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            if (id != user.UserId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
-
             try
             {
+                if (id == user.UserId)
+                    _context.Entry(user).State = EntityState.Modified;
+                else return BadRequest(ModelState);
+                // (CheckEmailAvailability(user.Email))
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -145,8 +138,11 @@ namespace signalr_server.Controllers
                     throw;
                 }
             }
-
-            return NoContent();
+            return Ok(new
+            {
+                data = user,
+                message = "User updated successfully"
+            });
         }
 
         // POST: api/Users
@@ -156,8 +152,7 @@ namespace signalr_server.Controllers
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var exist = _context.Users.FirstOrDefault(e => e.Email == user.Email);
-            if (exist != null) return Ok(new
+            if (CheckEmailAvailability(user.Email)) return Ok(new
             {
                 message = "Email you entered already exist",
                 data = new { }
@@ -168,7 +163,6 @@ namespace signalr_server.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
             await _chatHub.Clients.All.InvokeAsync("NewUser", user);
-
 
 
             var token = helperServices.GetToken(user);
@@ -203,28 +197,63 @@ namespace signalr_server.Controllers
 
             return Ok(user);
         }
-        [Route("uploadAvatar")]
         [HttpPost]
+        [Route("uploadAvatar")]
         public string UploadAvatar([FromBody] User user)
         {
             try
             {
-                string filePath = Path.Combine(_hostingEnvironment.WebRootPath, String.Format("Images/{0}.jpg",user.UserId));
+                string file = String.Format("Images/{0}.jpg", user.UserId);
+                string hostFilePath = String.Format("{0}://{1}/{2}", (HttpContext.Request.IsHttps)?"https":"httplogin", HttpContext.Request.Host.ToUriComponent(), file);
+                string filePath = Path.Combine(_hostingEnvironment.WebRootPath, file);
 
                 System.IO.File.WriteAllBytes(filePath, Convert.FromBase64String(user.Avatar));
                 var curruser = _context.Users.FirstOrDefault(e => e.UserId == user.UserId);
                 if (curruser != null)
                 {
-                    curruser.Avatar = filePath;
+                    curruser.Avatar = hostFilePath;
                     _context.SaveChanges();
                 }
-                return filePath;
+                return hostFilePath;
             }
             catch (Exception ex)
             {
                 return ex.InnerException.ToString();
             }
 
+        }
+
+
+        [HttpPost]
+        [Route("search")]
+        public IActionResult SearchUsers([FromBody]RequestDTO request)
+        {
+            try
+            {
+                var results = _context.Users.Where(e => e.Email.Contains(request.Search) || e.Name.Contains(request.Search))
+                    .Skip((request.Page - 1) * request.PageSize)
+                    .Take(request.Page * request.PageSize)
+                    .OrderBy(e => e.UserId)
+                    .ToList();
+
+                return Ok(new {
+                    data = results,
+                    message ="Here your users"
+                });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new
+                {
+                    data = new { },
+                    message = ex.InnerException.ToString()
+                });
+            }
+        }
+        public bool CheckEmailAvailability(string email)
+        {
+            var exist = _context.Users.FirstOrDefault(e => e.Email == email);
+            return (exist != null) ? false : true;
         }
         private bool UserExists(int id)
         {
